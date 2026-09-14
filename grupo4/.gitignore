@@ -1,0 +1,14 @@
+# objetos y binarios
+*.o
+*.out
+*.dSYM/
+cliente/cliente
+simulacion/simulacion
+almacenamiento/crear-disco
+almacenamiento/listar
+
+# discos generados (si entregan uno de ejemplo, quítenlo de aquí)
+*.img
+
+# sistema
+.DS_Store
