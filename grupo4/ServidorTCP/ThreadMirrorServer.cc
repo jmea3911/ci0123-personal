@@ -47,7 +47,7 @@ int main( int argc, char ** argv ) {
    std::thread * worker;
    VSocket * s1, * client;
 
-   s1 = new Socket( 's' );
+   s1 = new Socket( 's' , true );
 
    s1->Bind( PORT );		// Port to access this mirror server
    s1->MarkPassive( 5 );	// Set socket passive and backlog queue to 5 connections
