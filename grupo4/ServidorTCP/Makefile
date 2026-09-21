@@ -23,7 +23,7 @@ endif
 
 DEPS := VSocket.h Socket.h SSLSocket.h
 
-TARGETS := ForkMirrorServer.out ThreadMirrorServer.out MirrorClient.out sslserver sslclient
+TARGETS := ForkMirrorServer.out ThreadMirrorServer.out MirrorClient.out sslserver sslclient sslforkserver
 
 all: $(TARGETS)
 
@@ -45,5 +45,8 @@ sslserver: SSLServer.o VSocket.o Socket.o SSLSocket.o
 sslclient: SSLClient.o VSocket.o Socket.o SSLSocket.o
 	$(CXX) $^ $(LDFLAGS) $(THREAD_FLAGS) -o $@ $(SSL_LIBS)
 
+sslforkserver: SSLForkServer.o VSocket.o Socket.o SSLSocket.o
+	$(CXX) $^ $(LDFLAGS) -o $@ $(SSL_LIBS)
+
 clean:
-	rm -f *.o ForkMirrorServer.out ThreadMirrorServer.out MirrorClient.out sslserver sslclient
+	rm -f *.o ForkMirrorServer.out ThreadMirrorServer.out MirrorClient.out sslserver sslclient sslforkserver
