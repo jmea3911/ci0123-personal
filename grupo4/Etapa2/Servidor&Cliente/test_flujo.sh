@@ -66,7 +66,8 @@ echo ""
 echo "--- 4. Casos contra ./cliente ---"
 
 SALIDA=$(printf "10\nsalir\n" | ./cliente $HOST 2>&1)
-verificar "10 -- lista todas las categorias" "postres,caramelos,bebidas,reposteria" "$SALIDA"
+verificar "10 -- lista las categorias de Bodega1" "postres,caramelos,snacks" "$SALIDA"
+verificar "10 -- lista las categorias de Bodega2" "bebidas,reposteria,sandwiches" "$SALIDA"
 
 SALIDA=$(printf "20 postres\nsalir\n" | ./cliente $HOST 2>&1)
 verificar "20 postres -- muestra Flan-caramelo" "Flan-caramelo" "$SALIDA"

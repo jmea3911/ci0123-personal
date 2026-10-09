@@ -1,0 +1,9 @@
+g++ -std=c++17 -Wall -pthread -I/opt/homebrew/opt/openssl@3/include -o make_fileSys make_fileSys.cc Bitmap.cc FileSystem.cc Bodega.cc
+g++ -std=c++17 -Wall -pthread -I/opt/homebrew/opt/openssl@3/include -o servidor VSocket.cc Socket.cc SSLSocket.cc ServidorProductos.cc Server.cc Bitmap.cc FileSystem.cc Bodega.cc protocolo.cc -L/opt/homebrew/opt/openssl@3/lib -lssl -lcrypto
+ld: warning: dylib (/opt/homebrew/opt/openssl@3/lib/libssl.dylib) was built for newer macOS version (26.0) than being linked (13.3)
+ld: warning: dylib (/opt/homebrew/opt/openssl@3/lib/libcrypto.dylib) was built for newer macOS version (26.0) than being linked (13.3)
+g++ -std=c++17 -Wall -pthread -I/opt/homebrew/opt/openssl@3/include -o cliente VSocket.cc Socket.cc SSLSocket.cc Client.cc protocolo.cc -L/opt/homebrew/opt/openssl@3/lib -lssl -lcrypto
+ld: warning: dylib (/opt/homebrew/opt/openssl@3/lib/libssl.dylib) was built for newer macOS version (26.0) than being linked (13.3)
+ld: warning: dylib (/opt/homebrew/opt/openssl@3/lib/libcrypto.dylib) was built for newer macOS version (26.0) than being linked (13.3)
+g++ -std=c++17 -Wall -pthread -I/opt/homebrew/opt/openssl@3/include -o fileSys_herr fileSys_herr.cc Bitmap.cc FileSystem.cc Bodega.cc
+g++ -std=c++17 -Wall -pthread -I/opt/homebrew/opt/openssl@3/include -o read_fileSys read_fileSys.cc Bitmap.cc FileSystem.cc Bodega.cc

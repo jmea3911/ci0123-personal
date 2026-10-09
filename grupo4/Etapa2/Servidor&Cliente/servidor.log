@@ -1,0 +1,24 @@
+== Servidor INT_04 ==
+Escuchando HTTP en puerto 8080
+Archivo: bodega.dat
+Categorias: postres caramelos snacks panaderia helados frutas lacteos cereales galletas bebidas reposteria sandwiches ensaladas sopas jugos infusiones desayunos almuerzos 
+>> POST /mensaje | cuerpo: CLI_04|INT_04/10
+<< INT_04|CLI_04/11/postres,caramelos,snacks,panaderia,helados,frutas,lacteos,cereales,galletas,bebidas,reposteria,sandwiches,ensaladas,sopas,jugos,infusiones,desayunos,almuerzos
+>> POST /mensaje | cuerpo: CLI_04|INT_04/20/postres
+<< INT_04|CLI_04/22/3/Flan-caramelo,3.20,20;Tres-leches,3.80,15;Tiramisu,4.50,10
+>> POST /mensaje | cuerpo: CLI_04|INT_04/20/POSTRES
+<< INT_04|CLI_04/22/3/Flan-caramelo,3.20,20;Tres-leches,3.80,15;Tiramisu,4.50,10
+>> POST /mensaje | cuerpo: CLI_04|INT_04/20/zzz
+<< INT_04|CLI_04/23/No hay productos disponibles en la categoria "zzz"
+>> POST /mensaje | cuerpo: CLI_04|INT_04/30/flan-carameLO/2
+<< INT_04|CLI_04/32/flan-carameLO/3.20/2
+>> POST /mensaje | cuerpo: CLI_04|INT_04/30/Flan-caramelo/999
+<< INT_04|CLI_04/32/Flan-caramelo/3.20/0
+>> POST /mensaje | cuerpo: CLI_04|INT_04/30/Tres-leches/1
+<< INT_04|CLI_04/32/Tres-leches/3.80/1
+>> POST /mensaje | cuerpo: CLI_04|INT_04/40/1/Tres-leches,1
+<< INT_04|CLI_04/41/10.20/2/flan-carameLO,2,6.40;Tres-leches,1,3.80
+>> POST /mensaje | cuerpo: CLI_04|INT_04/40/0
+<< INT_04|CLI_04/42/El carrito esta vacio
+[GET] pagina de catalogo servida
+[GET] pagina de catalogo servida

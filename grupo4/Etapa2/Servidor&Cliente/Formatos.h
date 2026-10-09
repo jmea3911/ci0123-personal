@@ -92,4 +92,12 @@ struct RegistroProducto {
 
 #pragma pack(pop)
 
+// el trabajo en clase 13 exige bloques de 256 bytes: si algun struct cambia
+// de tamano, la compilacion falla en vez de corromper bodega.dat
+static_assert(sizeof(Superbloque) == TAM_BLOQUE, "Superbloque debe medir 256 bytes");
+static_assert(sizeof(BloqueDirBodegas) == TAM_BLOQUE, "BloqueDirBodegas debe medir 256 bytes");
+static_assert(sizeof(BloqueDirCategorias) == TAM_BLOQUE, "BloqueDirCategorias debe medir 256 bytes");
+static_assert(sizeof(BloqueIndice) == TAM_BLOQUE, "BloqueIndice debe medir 256 bytes");
+static_assert(sizeof(RegistroProducto) * PRODUCTOS_POR_BLOQUE == TAM_BLOQUE, "bloque de productos debe medir 256 bytes");
+
 #endif

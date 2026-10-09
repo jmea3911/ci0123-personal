@@ -176,3 +176,34 @@ reventar ni dejar el stock en un estado negativo.
 **Resultado:**   - el cliente mostró
 `"No se pudo agregar (sin stock o producto no encontrado)"`, y el stock
 del producto no cambió.
+
+---
+
+## 12. Catálogo de 100+ productos en dos bodegas (Trabajo en clase 13)
+
+**Pasos:**
+```
+./make_fileSys
+./read_fileSys
+```
+
+**Esperado:** al menos 100 productos repartidos en `Bodega1` y `Bodega2`, y
+todas las listas (tipo 22) dentro del límite de 256 bytes del protocolo.
+
+**Resultado:** - `read_fileSys` reporta 2 bodegas, 18 categorías y 113
+productos (evidencia en `salida_read_fileSys.txt`). La categoría con la lista
+más larga genera un mensaje 22 de 186 bytes. Bodega1 tiene 9 categorías, más
+de las 7 casillas de un bloque de directorio, así que el directorio crece
+enlazando un segundo bloque.
+
+---
+
+## 13. Restricción de 256 bytes por bloque
+
+**Pasos:** compilar `make_fileSys` (los `static_assert` de `Formatos.h`
+fallan la compilación si algún bloque no mide 256 bytes) y `ls -l bodega.dat`.
+
+**Esperado:** todos los structs de bloque miden 256 bytes y el archivo mide
+1024 × 256 = 262144 bytes.
+
+**Resultado:** - compila sin errores y `bodega.dat` mide 262144 bytes.
