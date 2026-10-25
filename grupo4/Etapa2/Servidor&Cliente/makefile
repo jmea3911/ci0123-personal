@@ -2,7 +2,6 @@ CXX = g++
 CXXFLAGS = -std=c++17 -Wall -pthread
 SSLFLAGS = -lssl -lcrypto
 
-# en Mac, Homebrew instala OpenSSL fuera de las rutas por defecto del compilador
 ifeq ($(shell uname),Darwin)
 OPENSSL_PREFIX := $(shell brew --prefix openssl@3)
 CXXFLAGS += -I$(OPENSSL_PREFIX)/include
