@@ -38,7 +38,8 @@ inline long canal( int origen, int destino ) {
 // al intermediario, en cualquier momento de la ejecución.
 const long CANAL_REGISTRO = 99;
 
-// Tamaño máximo de mensaje (el mismo del Buzon).
+// Tamaño del buffer de un mensaje en esta simulación (el mismo del Buzon). No es un límite del
+// protocolo: un mensaje que no cabe se rechaza con ERR_SIZE (91).
 const int TAM_MAX_MENSAJE = TAM_TEXTO;
 
 // IDs DE TEXTO DEL PROTOCOLO TICAMAZON

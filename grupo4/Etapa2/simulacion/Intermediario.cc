@@ -33,6 +33,20 @@ std::vector<InfoServidor> Intermediario::copiaServidores() {
 
 // Manda un mensaje por el canal Intermediario -> destino, lo rotula en pantalla y lo anota en la bitácora.
 void Intermediario::enviarA( int destinoId, const std::string & mensaje, const std::string & explicacion, bool anotar ) {
+    // El protocolo no fija un tamaño máximo; el buffer del buzón sí es finito. Si el mensaje no cabe,
+    // Buzon::Enviar lo cortaría en silencio, así que se responde ERR_SIZE (91) en su lugar.
+    if ( static_cast<int>( mensaje.size() ) >= TAM_MAX_MENSAJE ) {
+        int tipo = parsearMensaje( mensaje ).tipoMensaje;
+        std::string err = armarMensaje( idTextoIntermediario(), idTexto( destinoId ), ERR_SIZE,
+                                         { std::to_string( tipo < 0 ? 0 : tipo ), "mensaje",
+                                           std::to_string( mensaje.size() ), std::to_string( TAM_MAX_MENSAJE - 1 ) } );
+        rotular( ID_INTERMEDIARIO, destinoId, err, "respuesta demasiado grande para el buffer" );
+        buzon_.Enviar( err.c_str(), canal( ID_INTERMEDIARIO, destinoId ) );
+        if ( anotar ) {
+            anotarEvento( ID_INTERMEDIARIO, destinoId, err, "respuesta demasiado grande para el buffer" );
+        }
+        return;
+    }
     // Se rotula antes de enviar para que en pantalla el mensaje salga antes que el ACK del receptor
     rotular( ID_INTERMEDIARIO, destinoId, mensaje, explicacion );
     buzon_.Enviar( mensaje.c_str(), canal( ID_INTERMEDIARIO, destinoId ) );

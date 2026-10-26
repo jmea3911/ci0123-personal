@@ -15,9 +15,9 @@
 #include <sys/types.h>  // pid_t definition
 
 #define KEY 0xB54321     // Valor de la llave del recurso
-// Tamaño máximo de una línea de protocolo. Antes era 256: se sube porque las
-// respuestas de las consultas 74, 76 y 78 (servidores, rutas y bitácora) pueden
-// traer varias entradas. Debe ser menor que el máximo del sistema (msgmax, 8192).
+// Tamaño del buffer de una línea en esta simulación. El protocolo no fija un tamaño máximo
+// de mensaje: es un límite de la implementación. Un mensaje que no cabe se rechaza con
+// ERR_SIZE (91) en vez de cortarse. Debe ser menor que el máximo del sistema (msgmax, 8192).
 #define TAM_TEXTO 2048
 
 class Buzon {
