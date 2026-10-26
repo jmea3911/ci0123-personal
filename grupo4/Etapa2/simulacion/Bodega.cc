@@ -5,39 +5,43 @@
 #include "Bitacora.h"
 
 Bodega::Bodega( Buzon & buzon, int miId, const std::string & nombre,
+                 const std::string & ip, int puerto,
                  std::vector<std::string> categorias, std::vector<Producto> productos )
-    : buzon_( buzon ), miId_( miId ), nombre_( nombre ),
+    : buzon_( buzon ), miId_( miId ), nombre_( nombre ), ip_( ip ), puerto_( puerto ),
       categorias_( std::move( categorias ) ), productos_( std::move( productos ) ) {
 }
 
-// Se anuncia ante el intermediario con su ID y las categorías que atiende.
+// Se registra ante el intermediario con REGISTER_SERVER (70): publica su nombre,
+// ip, puerto y las categorías que atiende. Espera el REGISTER_ACK (71).
+// Devuelve false si el intermediario rechazó el registro.
 
-void Bodega::anunciarse() {
-    std::ostringstream msg;
-    msg << "HOLA " << miId_ << " " << nombre_ << " ";
-    for ( size_t i = 0; i < categorias_.size(); ++i ) {
-        msg << categorias_[ i ];
-        if ( i + 1 < categorias_.size() ) msg << ",";
+bool Bodega::registrarse() {
+    std::string registro = armarMensaje( idTexto( miId_ ), idTextoIntermediario(), REGISTER_SERVER,
+                                          { nombre_, ip_, std::to_string( puerto_ ), unir( categorias_, ',' ) } );
+    rotular( miId_, ID_INTERMEDIARIO, registro, nombre_ + " se registra y publica sus categorias" );
+    buzon_.Enviar( registro.c_str(), CANAL_REGISTRO );
+
+    struct { long mtype; char texto[ TAM_MAX_MENSAJE ]; } resp;
+    buzon_.Recibir( &resp, sizeof( resp.texto ), canal( ID_INTERMEDIARIO, miId_ ) );
+    std::string respuesta( resp.texto );
+
+    if ( parsearMensaje( respuesta ).tipoMensaje != REGISTER_ACK ) {
+        rotular( ID_INTERMEDIARIO, miId_, respuesta, nombre_ + ": registro rechazado, termina su hilo" );
+        return false;
     }
-    buzon_.Enviar( msg.str().c_str(), CANAL_REGISTRO );
-    rotular( miId_, ID_INTERMEDIARIO, msg.str(), "la bodega se anuncia" );
+    return true;
 }
 
 // REQUEST_CATEGORIES (10): responde con CATEGORY_LIST (11), un campo con
 // las categorías separadas por coma.
 void Bodega::manejarRequestCategories() {
-    std::ostringstream lista;
-    for ( size_t i = 0; i < categorias_.size(); ++i ) {
-        lista << categorias_[ i ];
-        if ( i + 1 < categorias_.size() ) lista << ",";
-    }
-    std::string resp = armarMensaje( idTexto( miId_ ), idTextoIntermediario(), CATEGORY_LIST, { lista.str() } );
+    std::string resp = armarMensaje( idTexto( miId_ ), idTextoIntermediario(), CATEGORY_LIST, { unir( categorias_, ',' ) } );
     buzon_.Enviar( resp.c_str(), canal( miId_, ID_INTERMEDIARIO ) );
     rotular( miId_, ID_INTERMEDIARIO, resp, "categorias enviadas" );
 }
 
 // REQUEST_PRODUCTS (20): responde con PRODUCT_LIST (22): <count>/<lista>,
-// o con campo "0" si la categoria no la atiende esta bodega.
+// o con campo "0" si la categoria no la atiende este servidor.
 
 void Bodega::manejarRequestProducts( const std::string & categoria ) {
     bool laAtiendo = std::find( categorias_.begin(), categorias_.end(), categoria ) != categorias_.end();
@@ -49,15 +53,16 @@ void Bodega::manejarRequestProducts( const std::string & categoria ) {
         return;
     }
 
-    std::ostringstream lista;
-    int cantidad = 0;
+    // Cada entrada es producto,precio,stock y van separadas por ';'
+    std::vector<std::string> entradas;
     for ( const auto & p : productos_ ) {
         if ( p.categoria != categoria ) continue;
-        lista << p.nombre << "," << p.precio << "," << p.stock << ";";
-        ++cantidad;
+        std::ostringstream entrada;
+        entrada << p.nombre << "," << p.precio << "," << p.stock;
+        entradas.push_back( entrada.str() );
     }
     std::string resp = armarMensaje( idTexto( miId_ ), idTextoIntermediario(), PRODUCT_LIST,
-                                      { std::to_string( cantidad ), lista.str() } );
+                                      { std::to_string( entradas.size() ), unir( entradas, ';' ) } );
     buzon_.Enviar( resp.c_str(), canal( miId_, ID_INTERMEDIARIO ) );
     rotular( miId_, ID_INTERMEDIARIO, resp, "listado de la categoria " + categoria );
 }
@@ -91,7 +96,11 @@ void Bodega::manejarReserveStock( const std::string & producto, const std::strin
 }
 
 void Bodega::ejecutar() {
-    anunciarse();
+    try {
+        if ( !registrarse() ) return;
+    } catch ( const std::runtime_error & ) {
+        return; // el buzon fue destruido: salida de respaldo
+    }
 
     while ( true ) {
         struct { long mtype; char texto[ TAM_MAX_MENSAJE ]; } msg;
@@ -106,7 +115,6 @@ void Bodega::ejecutar() {
 
         // EXIT es señal de control interna, no forma parte del protocolo.
         if ( linea == "EXIT" ) {
-            rotular( ID_INTERMEDIARIO, miId_, linea, "orden de cierre: " + nombre_ + " termina su hilo" );
             return;
         }
 
@@ -121,15 +129,13 @@ void Bodega::ejecutar() {
                     manejarRequestProducts( mensaje.campos[ 0 ] );
                 }
                 break;
-            // RESERVE_STOCK (50) se agrega cuando Intermediario mande
-            // ADD_TO_CART/RESERVE_STOCK.
             case RESERVE_STOCK:
                 if ( mensaje.campos.size() >= 2 ) {
                     manejarReserveStock( mensaje.campos[ 0 ], mensaje.campos[ 1 ] );
                 }
                 break;
             default:
-                
+
                 rotular( ID_INTERMEDIARIO, miId_, linea, "tipo de mensaje no reconocido (todavia)" );
                 break;
         }
