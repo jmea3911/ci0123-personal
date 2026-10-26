@@ -15,7 +15,10 @@
 #include <sys/types.h>  // pid_t definition
 
 #define KEY 0xB54321     // Valor de la llave del recurso
-#define TAM_TEXTO 256    // Tamaño máximo de una línea de protocolo
+// Tamaño máximo de una línea de protocolo. Antes era 256: se sube porque las
+// respuestas de las consultas 74, 76 y 78 (servidores, rutas y bitácora) pueden
+// traer varias entradas. Debe ser menor que el máximo del sistema (msgmax, 8192).
+#define TAM_TEXTO 2048
 
 class Buzon {
 public:
