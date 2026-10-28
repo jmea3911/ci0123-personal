@@ -1,10 +1,15 @@
 // Simulación de la tercera etapa de TicAmazon (Equipo 4 - cafeteria).
-// Hilos: Cliente, Intermediario y dos servidores de productos (Bodega1 y Bodega2).
+// Hilos: Cliente, Intermediario y dos servidores de productos (Bodega1 y Bodega2),
+// cada uno con su disco del almacenamiento (fs1.dat.ci0123 y fs2.dat.ci0123).
 // Bodega1 arranca con el sistema; Bodega2 se incorpora con el sistema ya en marcha.
 
 #include <thread>
 #include <chrono>
 #include <vector>
+#include <memory>
+#include <string>
+#include <cstdio>
+#include <stdexcept>
 
 #include "Buzon.h"
 #include "Protocolo.h"
@@ -12,29 +17,27 @@
 #include "Intermediario.h"
 #include "Cliente.h"
 
-int main() {
+int main( int argc, char ** argv ) {
+    // Cada servidor de productos trabaja sobre su propio disco del almacenamiento
+    // (se crean con "make discos" en la carpeta almacenamiento/). Se pueden pasar otras rutas:
+    //     ./simulacion [disco_SERV_01 [disco_SERV_02]]
+    const std::string disco1 = argc > 1 ? argv[ 1 ] : "../almacenamiento/fs1.dat.ci0123";
+    const std::string disco2 = argc > 2 ? argv[ 2 ] : "../almacenamiento/fs2.dat.ci0123";
+
     Buzon buzon; // un solo buzon compartido por todos los hilos
 
-    // SERV_01: Postres y Caramelos
-    std::vector<Producto> productosBodega1 = {
-        { "tarta",     2200.0f, 10, "tarta de queso del dia",       "Postres" },
-        { "flan",      1500.0f,  8, "flan de vainilla casero",      "Postres" },
-        { "menta",      300.0f, 100, "caramelo de menta individual", "Caramelos" },
-        { "fresa",      350.0f,  80, "caramelo de fresa individual", "Caramelos" }
-    };
-
-    // SERV_02: Bebidas y Reposteria
-    std::vector<Producto> productosBodega2 = {
-        { "cafe",      1000.0f, 50, "cafe negro",                   "Bebidas" },
-        { "capuchino", 1200.0f, 40, "espresso con leche",           "Bebidas" },
-        { "pan-dulce",  900.0f, 20, "pan dulce relleno de queso",   "Reposteria" },
-        { "galleta",    250.0f, 60, "galleta de mantequilla",       "Reposteria" }
-    };
-
-    Bodega bodega1( buzon, ID_PRIMER_SERVIDOR, "Bodega1", "172.16.123.68", 9050,
-                    { "Postres", "Caramelos" }, productosBodega1 );
-    Bodega bodega2( buzon, ID_PRIMER_SERVIDOR + 1, "Bodega2", "172.16.123.69", 9050,
-                    { "Bebidas", "Reposteria" }, productosBodega2 );
+    // Las categorias y productos de cada servidor salen de su disco, no del codigo:
+    //   SERV_01 (fs1): bodegas 1 y 2 -> postres, caramelos, bebidas, reposteria
+    //   SERV_02 (fs2): bodegas 3 y 4 -> helados, snacks, desayunos, sandwiches
+    std::unique_ptr<Bodega> bodega1, bodega2;
+    try {
+        bodega1 = std::make_unique<Bodega>( buzon, ID_PRIMER_SERVIDOR, "Bodega1", "172.16.123.68", 9050, disco1 );
+        bodega2 = std::make_unique<Bodega>( buzon, ID_PRIMER_SERVIDOR + 1, "Bodega2", "172.16.123.69", 9050, disco2 );
+    } catch ( const std::exception & e ) {
+        fprintf( stderr, "No se pudo abrir el almacenamiento: %s\n"
+                         "Cree los discos con:  make discos   (o  cd ../almacenamiento && make discos)\n", e.what() );
+        return 1;
+    }
     Intermediario intermediario( buzon );
     Cliente cliente( buzon );
 
@@ -42,10 +45,10 @@ int main() {
     // incorpora un servidor nuevo, y entonces se registra ante el intermediario.
     std::thread hBodega2;
     cliente.incorporarServidor = [ & ]() {
-        hBodega2 = std::thread( &Bodega::ejecutar, &bodega2 );
+        hBodega2 = std::thread( &Bodega::ejecutar, bodega2.get() );
     };
 
-    std::thread hBodega1( &Bodega::ejecutar, &bodega1 );
+    std::thread hBodega1( &Bodega::ejecutar, bodega1.get() );
     std::thread hIntermediario( &Intermediario::ejecutar, &intermediario );
 
     // Pausa para que Bodega1 se registre antes de que el cliente empiece

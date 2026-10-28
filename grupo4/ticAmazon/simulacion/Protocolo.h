@@ -199,14 +199,4 @@ inline MensajeProtocolo parsearMensaje( const std::string & linea ) {
     return m;
 }
 
-// Un producto de un servidor de productos.
-
-struct Producto {
-    std::string nombre;
-    float precio;
-    int stock;
-    std::string descripcion;
-    std::string categoria;
-};
-
 #endif

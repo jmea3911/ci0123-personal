@@ -34,7 +34,7 @@ void Cliente::ejecutar() {
     const std::string intermed = idTextoIntermediario();
 
     std::vector<std::string> peticiones = {
-        // Al principio solo está registrado SERV_01 (Postres y Caramelos)
+        // Al principio solo está registrado SERV_01 (Postres, Caramelos, Bebidas y Reposteria, de su disco)
 
         // caso normal: pedir la lista de categorias disponibles
         armarMensaje( cli, intermed, REQUEST_CATEGORIES ),
@@ -44,8 +44,8 @@ void Cliente::ejecutar() {
         armarMensaje( cli, intermed, REQUEST_PRODUCTS, { "Licores" } ),
         // caso normal: categoria que si atiende SERV_01
         armarMensaje( cli, intermed, REQUEST_PRODUCTS, { "Caramelos" } ),
-        // Bebidas todavia no la atiende nadie
-        armarMensaje( cli, intermed, REQUEST_PRODUCTS, { "Bebidas" } ),
+        // Helados todavia no la atiende nadie (esta en el disco de SERV_02)
+        armarMensaje( cli, intermed, REQUEST_PRODUCTS, { "Helados" } ),
         // consultas al intermediario: servidores registrados y tabla de rutas
         armarMensaje( cli, intermed, REQUEST_SERVERS ),
         armarMensaje( cli, intermed, REQUEST_ROUTES ),
@@ -54,11 +54,11 @@ void Cliente::ejecutar() {
         //ERR_FORMAT
         armarMensaje( cli, intermed, ADD_TO_CART, { "torta#3", "2" } ),
         //caso correcto
-        armarMensaje( cli, intermed, ADD_TO_CART, { "menta", "2" } ),
+        armarMensaje( cli, intermed, ADD_TO_CART, { "Caramelo-menta", "2" } ),
         //caso correcto (stock insuficiente: reserva lo que hay)
-        armarMensaje( cli, intermed, ADD_TO_CART, { "fresa", "500" } ),
+        armarMensaje( cli, intermed, ADD_TO_CART, { "Caramelo-fresa", "500" } ),
 
-        // Incorporacion dinamica: SERV_02 (Bebidas y Reposteria) se registra con el sistema en marcha
+        // Incorporacion dinamica: SERV_02 (Helados, Snacks, Desayunos y Sandwiches, de su disco) se registra con el sistema en marcha
         INCORPORAR_SERVIDOR,
 
         // ahora aparecen las categorias, los servidores y las rutas del servidor nuevo
@@ -66,9 +66,9 @@ void Cliente::ejecutar() {
         armarMensaje( cli, intermed, REQUEST_SERVERS ),
         armarMensaje( cli, intermed, REQUEST_ROUTES ),
         // la categoria se compara sin distinguir mayusculas
-        armarMensaje( cli, intermed, REQUEST_PRODUCTS, { "bebidas" } ),
+        armarMensaje( cli, intermed, REQUEST_PRODUCTS, { "HELADOS" } ),
         // producto de SERV_02: el intermediario sabe a quien reservarle
-        armarMensaje( cli, intermed, ADD_TO_CART, { "cafe", "2" } ),
+        armarMensaje( cli, intermed, ADD_TO_CART, { "Helado-vainilla", "2" } ),
         //ERR_COMM
         armarMensaje( cli, intermed, ADD_TO_CART, { "silenciar", "1" } ),
         //Factura final
